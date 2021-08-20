@@ -2,8 +2,6 @@ package com.mav.email.constants;
 
 public class MailConstants {
 
-	public static String EMAIL_ADDRESS_REGEX = "^[\\w0-9._%+-]+@[\\w0-9.-]+\\.[\\w]{2,6}$";
-
 	public static final String EMAIL_PORT_KEY = "email_port";
 	public static final String EMAIL_PROTOCOL_KEY = "email_protocol";
 	public static final String EMAIL_HOST_KEY = "email_host";
@@ -38,5 +36,11 @@ public class MailConstants {
 	public static final String CONSOLIDATED_DELIVERY_STATUS_FAILED_RECIPIENT_MAP = "consolidatedDeliveryStatusFailedRecipientMap";
 	public static final String BOUNCE_BACK_MAIL_BODY = "bounceBackMailBody";
 	public static final String MESSAGE_ID = "Message-Id";
+
+	public static final String MAIL_SMTP_HOST_KEY = "mail.smtp.host";
+	public static final String MAIL_SMTP_AUTHENTICATION_KEY = "mail.smtp.auth";
+	public static final String MAIL_SMTP_STARTTLS_ENABLE_KEY = "mail.smtp.starttls.enable";
+	public static final String MAIL_SMTP_PORT_KEY = "mail.smtp.port";
+	// public static final String = "";
 
 }

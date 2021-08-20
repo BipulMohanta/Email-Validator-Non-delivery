@@ -55,7 +55,7 @@ import com.sun.mail.imap.IMAPInputStream;
 public class MailUtil {
 	
 	public static Boolean syntaxValidateMail(String emailAddress) {
-		return Pattern.matches(MailConstants.EMAIL_ADDRESS_REGEX, emailAddress);
+		return Pattern.matches(MailConstants.EMAIL_VALIDATOR_REGEX, emailAddress);
 	}
 	
 	public static String sendMailWithoutAttachement(EmailMessage emailMessage) {

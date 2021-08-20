@@ -5,6 +5,7 @@ import java.util.Map;
 import javax.mail.MessagingException;
 
 import com.mav.email.bo.EmailMessage;
+import com.mav.email.exception.CustomServiceException;
 
 /**
  * 
@@ -18,7 +19,7 @@ public interface SendEmailService {
 	 * @return
 	 * @throws MessagingException
 	 */
-	public EmailMessage sendMailWithoutAttachment(EmailMessage emailMessage) throws MessagingException;
+	public EmailMessage sendMailWithoutAttachment(EmailMessage emailMessage) throws CustomServiceException;
 
 	/**
 	 * @author bipul.mohanta
@@ -26,6 +27,6 @@ public interface SendEmailService {
 	 * @return
 	 * @throws MessagingException
 	 */
-	public Map<String, Object> sendMailWithAttachment(EmailMessage emailMessage) throws MessagingException;
+	public Map<String, Object> sendMailWithAttachment(EmailMessage emailMessage) throws CustomServiceException;
 
 }

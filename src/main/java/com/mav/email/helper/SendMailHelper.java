@@ -1,12 +1,9 @@
-package com.mav.email.util;
+package com.mav.email.helper;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import javax.activation.DataSource;
-import javax.activation.FileDataSource;
-import javax.mail.BodyPart;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
@@ -17,37 +14,41 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 
-import com.mav.email.bo.EmailMessage;
-import com.sun.mail.smtp.SMTPMessage;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
 
-public class SendMailUtil extends MailUtil {
-	public static EmailMessage sendMail(EmailMessage emailMessage) throws MessagingException {
+import com.mav.email.bo.EmailMessage;
+import com.mav.email.constants.MailConstants;
+import com.mav.email.exception.CustomServiceException;
+import com.sun.mail.smtp.SMTPMessage;
+@Component
+public class SendMailHelper {
+	
+	@Autowired
+	private Environment environment;
+	
+	/**
+	 * 
+	 * @param emailMessage
+	 * @return
+	 * @throws CustomServiceException
+	 */
+	public  EmailMessage sendMail(EmailMessage emailMessage) throws CustomServiceException {
 
 		String bounceAddr = emailMessage.getBounceBackReciveEmail();
 
 		String from = emailMessage.getFromUser();
-		Session session = null;
-		Properties props = System.getProperties();
 
-		props.put("mail.smtp.host", "outlook.office365.com");
-		if (Boolean.TRUE.equals(emailMessage.getIsAuthReq())) {
-			props.put("mail.smtp.auth", "true");
-			props.put("mail.smtp.starttls.enable", "true");
-			props.put("mail.smtp.port", "587");
-
-			session = Session.getInstance(props, new javax.mail.Authenticator() {
-				@Override
-				protected PasswordAuthentication getPasswordAuthentication() {
-					return new PasswordAuthentication("", "");
-				}
-			});
-		} else {
-			session = Session.getInstance(props, null);
-		}
+		Properties mailProperties = getMailProperty(emailMessage.getIsAuthReq());
+		Session sessionProperties = getMailSession(mailProperties, emailMessage.getIsAuthReq(),"","");
 
 		try {
-			SMTPMessage message = new SMTPMessage(session);
+			SMTPMessage message = new SMTPMessage(sessionProperties);
+			
 			message.addHeader("customHeader", emailMessage.getCustomMessageHeaderId());
+			
 			message.setFrom(new InternetAddress(from));
 
 			message.setSubject(emailMessage.getSubject(), "text/html");
@@ -86,12 +87,56 @@ public class SendMailUtil extends MailUtil {
 			Transport.send(message);
 
 			emailMessage.setMessageId(message.getMessageID());
-		} catch (MessagingException | IOException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (MessagingException | IOException exception) {
+			throw new CustomServiceException("", exception, HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (Exception exception) {
+			throw new CustomServiceException("", exception, HttpStatus.INTERNAL_SERVER_ERROR);
+
 		}
 
 		return emailMessage;
 	}
+
+	/**
+	 * @author bipul.mohanta
+	 * @param props
+	 * @param isAuthReq
+	 * @param userName
+	 * @param password
+	 * @return
+	 */
+	public Session getMailSession(Properties props, boolean isAuthReq, String userName, String password) {
+		Session session = null;
+		if (Boolean.TRUE.equals(isAuthReq)) {
+
+			session = Session.getInstance(props, new javax.mail.Authenticator() {
+				@Override
+				protected PasswordAuthentication getPasswordAuthentication() {
+					return new PasswordAuthentication(userName, password);
+				}
+			});
+		} else {
+			session = Session.getInstance(props, null);
+		}
+		return session;
+	}
+
+	/**
+	 * @author bipul.mohanta
+	 * @param isAuthReq
+	 * @return
+	 */
+	public Properties getMailProperty(boolean isAuthReq) {
+		Properties props = System.getProperties();
+		props.put(MailConstants.MAIL_SMTP_HOST_KEY, "outlook.office365.com");
+		if (Boolean.TRUE.equals(isAuthReq)) {
+			props.put(MailConstants.MAIL_SMTP_AUTHENTICATION_KEY, "true");
+			props.put(MailConstants.MAIL_SMTP_STARTTLS_ENABLE_KEY, "true");
+			props.put(MailConstants.MAIL_SMTP_PORT_KEY, "587");
+
+		}
+		return props;
+	}
+
+
 }

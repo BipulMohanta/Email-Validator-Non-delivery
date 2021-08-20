@@ -42,13 +42,14 @@ public class GenericUtil {
 	 * @param emailMessage
 	 * @return
 	 * @throws JSONException
+	 * @throws ValidationException 
 	 */
-	public static void ValidateRequestEmailObject(EmailMessage emailMessage) throws JSONException {
+	public static void ValidateRequestEmailObject(EmailMessage emailMessage) throws JSONException, ValidationException {
 
 		if (CollectionUtils.isEmpty(emailMessage.getToEmail()) || StringUtils.isBlank(emailMessage.getSubject())
 				|| StringUtils.isBlank(emailMessage.getFromUser())) {
 
-			throw new ValidationException("Invalid Request Input", HttpStatus.BAD_REQUEST.value());
+			throw new ValidationException(HttpStatus.BAD_REQUEST,"Invalid Request Input");
 		}
 
 	}
