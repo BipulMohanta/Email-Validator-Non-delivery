@@ -105,4 +105,10 @@ public class GenericUtil {
 		return returnList;
 
 	}
+	
+	private boolean validateFileExtension(String extension) {
+		return false;
+		
+	}
+	
 }

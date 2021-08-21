@@ -27,6 +27,6 @@ public interface SendEmailService {
 	 * @return
 	 * @throws MessagingException
 	 */
-	public Map<String, Object> sendMailWithAttachment(EmailMessage emailMessage) throws CustomServiceException;
+	public EmailMessage sendMailWithAttachment(EmailMessage emailMessage) throws CustomServiceException;
 
 }

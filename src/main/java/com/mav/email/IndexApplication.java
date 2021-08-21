@@ -1,4 +1,4 @@
-package com.mav;
+package com.mav.email;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

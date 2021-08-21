@@ -1,6 +1,7 @@
 package com.mav.email.entity;
 
 import java.util.Date;
+import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,7 +16,7 @@ public class RestLogs {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Integer id;
+	private UUID id;
 
 	@Column(name = "requestReceivedOn")
 	private Date requestReceivedOn;

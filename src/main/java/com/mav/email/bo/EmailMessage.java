@@ -1,6 +1,7 @@
 package com.mav.email.bo;
 
 import java.util.List;
+
 /**
  * 
  * @author bipul.mohanta
@@ -9,7 +10,6 @@ import java.util.List;
 public class EmailMessage {
 
 	private String fromUser;
-	private String bounceBackReciveEmail;
 	private String subject;
 	private String bodyMessage;
 	private List<String> toEmail;
@@ -21,7 +21,7 @@ public class EmailMessage {
 	private boolean isAuthReq;
 
 	public EmailMessage() {
-		throw new IllegalStateException("");
+		
 	}
 
 	public EmailMessage(String fromUser, String subject, String bodyMessage, List<String> toEmail, List<String> ccEmail,
@@ -35,11 +35,10 @@ public class EmailMessage {
 		this.bccEmail = bccEmail;
 	}
 
-	public EmailMessage(String fromUser, String bounceBackReciveEmail, String subject, String bodyMessage,
-			List<String> toEmail, List<String> ccEmail, List<String> bccEmail, List<Attachment> attachments) {
+	public EmailMessage(String fromUser, String subject, String bodyMessage, List<String> toEmail, List<String> ccEmail,
+			List<String> bccEmail, List<Attachment> attachments) {
 		super();
 		this.fromUser = fromUser;
-		this.bounceBackReciveEmail = bounceBackReciveEmail;
 		this.subject = subject;
 		this.bodyMessage = bodyMessage;
 		this.toEmail = toEmail;
@@ -54,14 +53,6 @@ public class EmailMessage {
 
 	public void setFromUser(String fromUser) {
 		this.fromUser = fromUser;
-	}
-
-	public String getBounceBackReciveEmail() {
-		return bounceBackReciveEmail;
-	}
-
-	public void setBounceBackReciveEmail(String bounceBackReciveEmail) {
-		this.bounceBackReciveEmail = bounceBackReciveEmail;
 	}
 
 	public String getSubject() {

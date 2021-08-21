@@ -40,7 +40,7 @@ public class SendEmailServiceImpl implements SendEmailService {
 	}
 
 	@Override
-	public Map<String, Object> sendMailWithAttachment(EmailMessage emailMessage) throws CustomServiceException {
+	public EmailMessage sendMailWithAttachment(EmailMessage emailMessage) throws CustomServiceException {
 		try {
 			GenericUtil.ValidateRequestEmailObject(emailMessage);
 

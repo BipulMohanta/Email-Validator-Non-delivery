@@ -1,6 +1,9 @@
 package com.mav.email.constants;
 
 public class MailConstants {
+	private MailConstants() {
+		throw new IllegalStateException("Mail Constants class");
+	}
 
 	public static final String EMAIL_PORT_KEY = "email_port";
 	public static final String EMAIL_PROTOCOL_KEY = "email_protocol";
@@ -23,11 +26,6 @@ public class MailConstants {
 	public static final String SENDER_NAME = "SENDER_NAME";
 	public static final String EMAIL_SUBJECT = "EMAIL_SUBJECT";
 	public static final String RECIPIENT_EMAIL_ID = "RECIPIENT_EMAIL_ID";
-	public static final String COMPANY_NAME = "COMPANY_NAME";
-	public static final String CONTRACT_NUMBER = "CONTRACT_NUMBER";
-	public static final String CONTRACT_TITLE = "CONTRACT_TITLE";
-	public static final String ULTRIA_CLM_LOGIN_URL = "ULTRIA_CLM_LOGIN_URL";
-	public static final String ULTRIA_CLM_LOGO = "ULTRIA_CLM_LOGO";
 	public static final String MESSAGE_RFC_822 = "message/rfc822";
 	public static final String MESSAGE_DELIVERY_STATUS = "message/delivery-status";
 	public static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
@@ -41,6 +39,5 @@ public class MailConstants {
 	public static final String MAIL_SMTP_AUTHENTICATION_KEY = "mail.smtp.auth";
 	public static final String MAIL_SMTP_STARTTLS_ENABLE_KEY = "mail.smtp.starttls.enable";
 	public static final String MAIL_SMTP_PORT_KEY = "mail.smtp.port";
-	// public static final String = "";
 
 }

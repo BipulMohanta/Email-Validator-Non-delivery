@@ -2,9 +2,11 @@ package com.mav.email.helper;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 
 import javax.mail.Message;
+import javax.mail.Message.RecipientType;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.PasswordAuthentication;
@@ -14,80 +16,71 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import com.mav.email.bo.EmailMessage;
+import com.mav.email.constants.EnvironmentVariableConstants;
 import com.mav.email.constants.MailConstants;
 import com.mav.email.exception.CustomServiceException;
 import com.sun.mail.smtp.SMTPMessage;
+
 @Component
 public class SendMailHelper {
-	
+
 	@Autowired
 	private Environment environment;
-	
+
 	/**
 	 * 
 	 * @param emailMessage
 	 * @return
 	 * @throws CustomServiceException
 	 */
-	public  EmailMessage sendMail(EmailMessage emailMessage) throws CustomServiceException {
-
-		String bounceAddr = emailMessage.getBounceBackReciveEmail();
-
-		String from = emailMessage.getFromUser();
+	public EmailMessage sendMail(EmailMessage emailMessage) throws CustomServiceException {
 
 		Properties mailProperties = getMailProperty(emailMessage.getIsAuthReq());
-		Session sessionProperties = getMailSession(mailProperties, emailMessage.getIsAuthReq(),"","");
+		Session sessionProperties = getMailSession(mailProperties, emailMessage.getIsAuthReq(),
+				environment.getProperty(EnvironmentVariableConstants.EMAIL_SERVICE_MAIN_ACCOUNT_EMAIL_ADDRESS),
+				environment
+						.getProperty(EnvironmentVariableConstants.EMAIL_SERVICE_MAIN_ACCOUNT_EMAIL_ADDRESS_PASSWORD));
+		String from = environment.getProperty(EnvironmentVariableConstants.EMAIL_SERVICE_MAIN_ACCOUNT_EMAIL_ADDRESS);
 
 		try {
 			SMTPMessage message = new SMTPMessage(sessionProperties);
-			
+
 			message.addHeader("customHeader", emailMessage.getCustomMessageHeaderId());
-			
+
 			message.setFrom(new InternetAddress(from));
 
 			message.setSubject(emailMessage.getSubject(), "text/html");
 			message.setContent(emailMessage.getBodyMessage(), "text/html");
 
-			InternetAddress[] toAddressess = new InternetAddress[emailMessage.getToEmail().size()];
-			for (int i = 0; i < emailMessage.getToEmail().size(); i++) {
-				toAddressess[i] = new InternetAddress(emailMessage.getToEmail().get(i));
-			}
-			message.addRecipients(Message.RecipientType.TO, toAddressess);
-
-			InternetAddress[] ccAddresses = new InternetAddress[emailMessage.getCcEmail().size()];
-			for (int i = 0; i < emailMessage.getCcEmail().size(); i++) {
-				ccAddresses[i] = new InternetAddress(emailMessage.getCcEmail().get(i));
-			}
-			message.addRecipients(Message.RecipientType.CC, ccAddresses);
-
-			InternetAddress[] bccAddresses = new InternetAddress[emailMessage.getBccEmail().size()];
-			for (int i = 0; i < emailMessage.getBccEmail().size(); i++) {
-				bccAddresses[i] = new InternetAddress(emailMessage.getBccEmail().get(i));
-			}
-			message.addRecipients(Message.RecipientType.BCC, bccAddresses);
+			addEmailAddressToMessage(message, Message.RecipientType.TO, emailMessage.getToEmail());
+			addEmailAddressToMessage(message, Message.RecipientType.CC, emailMessage.getCcEmail());
+			addEmailAddressToMessage(message, Message.RecipientType.BCC, emailMessage.getBccEmail());
 
 			message.setNotifyOptions(SMTPMessage.NOTIFY_FAILURE);
-			message.setEnvelopeFrom(bounceAddr);
+			message.setEnvelopeFrom(
+					environment.getProperty(EnvironmentVariableConstants.EMAIL_SERVICE_BOUNCE_BACK_EMAIL_ADDRESS));
 
-			Multipart multipart = new MimeMultipart();
-			for (int i = 0; i < emailMessage.getAttachments().size(); i++) {
-				MimeBodyPart attachmentPart = new MimeBodyPart();
-				attachmentPart.attachFile(new File(emailMessage.getAttachments().get(i).getActualFilePath()));
-				multipart.addBodyPart(attachmentPart);
+			if (CollectionUtils.isNotEmpty(emailMessage.getAttachments())) {
+				Multipart multipart = new MimeMultipart();
+				for (int i = 0; i < emailMessage.getAttachments().size(); i++) {
+					MimeBodyPart attachmentPart = new MimeBodyPart();
+					attachmentPart.attachFile(new File(emailMessage.getAttachments().get(i).getActualFilePath()));
+					multipart.addBodyPart(attachmentPart);
+				}
+				message.setContent(multipart);
 			}
-			message.setContent(multipart);
 
-			message.saveChanges();
 			Transport.send(message);
 
 			emailMessage.setMessageId(message.getMessageID());
-		} catch (MessagingException | IOException exception) {
+		} catch (MessagingException exception) {
 			throw new CustomServiceException("", exception, HttpStatus.INTERNAL_SERVER_ERROR);
 		} catch (Exception exception) {
 			throw new CustomServiceException("", exception, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -95,6 +88,23 @@ public class SendMailHelper {
 		}
 
 		return emailMessage;
+	}
+
+	/**
+	 * 
+	 * @param message
+	 * @param type
+	 * @param emailList
+	 * @throws MessagingException
+	 */
+	public void addEmailAddressToMessage(SMTPMessage message, RecipientType type, List<String> emailList)
+			throws MessagingException {
+		InternetAddress[] emailAddressesArray = new InternetAddress[emailList.size()];
+		for (int i = 0; i < emailList.size(); i++) {
+			emailAddressesArray[i] = new InternetAddress(emailList.get(i));
+		}
+		message.addRecipients(type, emailAddressesArray);
+
 	}
 
 	/**
@@ -128,15 +138,15 @@ public class SendMailHelper {
 	 */
 	public Properties getMailProperty(boolean isAuthReq) {
 		Properties props = System.getProperties();
-		props.put(MailConstants.MAIL_SMTP_HOST_KEY, "outlook.office365.com");
+		props.put(MailConstants.MAIL_SMTP_HOST_KEY,
+				environment.getProperty(EnvironmentVariableConstants.EMAIL_SMTP_HOST_NAME));
 		if (Boolean.TRUE.equals(isAuthReq)) {
 			props.put(MailConstants.MAIL_SMTP_AUTHENTICATION_KEY, "true");
 			props.put(MailConstants.MAIL_SMTP_STARTTLS_ENABLE_KEY, "true");
-			props.put(MailConstants.MAIL_SMTP_PORT_KEY, "587");
+			props.put(MailConstants.MAIL_SMTP_PORT_KEY, EnvironmentVariableConstants.EMAIL_SMTP_PORT_NUMBER);
 
 		}
 		return props;
 	}
-
 
 }

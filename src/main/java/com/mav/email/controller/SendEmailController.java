@@ -21,7 +21,7 @@ import com.mav.email.service.SendEmailService;
  */
 @RestController
 @RequestMapping(path = "api/v1/mail")
-public class SendEmailController implements Mail {
+public class SendEmailController {
 
 	@Autowired
 	@Qualifier(value = "sendEmailService")
@@ -39,14 +39,30 @@ public class SendEmailController implements Mail {
 	@PostMapping(path = "sendMailWithoutAttachment")
 	public ResponseEntity<ResponseDTO> sendMailWithoutAttachment(@RequestBody EmailMessage emailMessage) {
 		try {
-		
 			emailMessage = sendEmailService.sendMailWithoutAttachment(emailMessage);
 			return responseDTOFactory.reportOkStatus(null, emailMessage);
 		} catch (CustomServiceException exception) {
 
 			return null;
 
-		} 
+		}
+	}
+	
+	/**
+	 * @author bipul.mohanta
+	 * @param emailMessage
+	 * @return
+	 */
+	@PostMapping(path = "sendMailWithAttachment")
+	public ResponseEntity<ResponseDTO> sendMailWithAttachment(@RequestBody EmailMessage emailMessage) {
+		try {
+			emailMessage = sendEmailService.sendMailWithAttachment(emailMessage);
+			return responseDTOFactory.reportOkStatus(null, emailMessage);
+		} catch (CustomServiceException exception) {
+
+			return null;
+
+		}
 	}
 
 }
