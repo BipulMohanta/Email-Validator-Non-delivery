@@ -8,11 +8,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import com.mav.email.bo.Attachment;
 import com.mav.email.bo.EmailMessage;
+import com.mav.email.entity.SentMailDetails;
+import com.mav.email.entity.UploadedDocument;
 import com.mav.email.exception.CustomServiceException;
 import com.mav.email.exception.ValidationException;
 import com.mav.email.helper.SendMailHelper;
+import com.mav.email.manager.SendMailManager;
 import com.mav.email.service.SendEmailService;
+import com.mav.email.service.UploadFileService;
 import com.mav.email.util.GenericUtil;
 
 @Service("sendEmailService")
@@ -20,11 +25,18 @@ public class SendEmailServiceImpl implements SendEmailService {
 
 	@Autowired
 	private SendMailHelper sendMailHelper;
-	
+
+	@Autowired
+	private SendMailManager sendMailManager;
+
+	@Autowired
+	private UploadFileService uploadFileService;
+
 	@Override
 	public EmailMessage sendMailWithoutAttachment(EmailMessage emailMessage) throws CustomServiceException {
 		try {
-			GenericUtil.ValidateRequestEmailObject(emailMessage);
+			GenericUtil.validateRequestEmailObject(emailMessage);
+			persistEmailInDB(emailMessage);
 			sendMailHelper.sendMail(emailMessage);
 			return emailMessage;
 		} catch (ValidationException exception) {
@@ -42,10 +54,14 @@ public class SendEmailServiceImpl implements SendEmailService {
 	@Override
 	public EmailMessage sendMailWithAttachment(EmailMessage emailMessage) throws CustomServiceException {
 		try {
-			GenericUtil.ValidateRequestEmailObject(emailMessage);
-
+			GenericUtil.validateRequestEmailObject(emailMessage);
+			GenericUtil.validateRequestAttachmentFileIds(emailMessage);
+			List<UploadedDocument> uploadedDocuments = uploadFileService
+					.getListOfUploadedDocument(emailMessage.getServerFileIds());
+			List<Attachment> attachementDocuments = sendMailHelper.castUploadedDocumentToAttachement(uploadedDocuments);
+			emailMessage.setAttachments(attachementDocuments);
 			sendMailHelper.sendMail(emailMessage);
-			return null;
+			return emailMessage;
 		} catch (ValidationException exception) {
 			throw new CustomServiceException(exception.getErrorMessage(), exception, exception.gethttpStatus());
 		} catch (CustomServiceException exception) {
@@ -56,22 +72,15 @@ public class SendEmailServiceImpl implements SendEmailService {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	private EmailMessage generateEmailEmailMessageObject(Map<String, Object> mailMetadataMap) {
+	@Override
+	public void persistEmailInDB(EmailMessage emailMessage) throws CustomServiceException {
+		try {
+			SentMailDetails sentMailDetails = sendMailHelper.createSentMailDetailsObject(emailMessage);
+			sendMailManager.persistSendMailData(sentMailDetails);
+		} catch (Exception exception) {
+			throw new CustomServiceException("", exception, HttpStatus.INTERNAL_SERVER_ERROR);
 
-		List<String> toEmail = (List<String>) mailMetadataMap.get("toEmailAddress");
-		List<String> ccEmail = (List<String>) mailMetadataMap.get("ccEmailAddress");
-		List<String> bccEmail = (List<String>) mailMetadataMap.get("bccEmailAddress");
-		String subject = (String) mailMetadataMap.get("subject");
-		String bodyMessage = (String) mailMetadataMap.get("bodyMessage");
-		String fromUser = (String) mailMetadataMap.get("fromUser");
-
-		EmailMessage emailMessage = new EmailMessage(fromUser, subject, bodyMessage, toEmail, ccEmail, bccEmail);
-
-		UUID uuid = UUID.randomUUID();
-
-		emailMessage.setCustomMessageHeaderId("MAIL_ENGINE_" + uuid.toString());
-		return emailMessage;
+		}
 	}
 
 }

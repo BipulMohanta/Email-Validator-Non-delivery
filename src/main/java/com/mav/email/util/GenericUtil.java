@@ -1,10 +1,12 @@
 package com.mav.email.util;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -14,6 +16,7 @@ import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 
 import com.mav.email.bo.EmailMessage;
+import com.mav.email.exception.CustomServiceException;
 import com.mav.email.exception.ValidationException;
 
 /**
@@ -42,14 +45,14 @@ public class GenericUtil {
 	 * @param emailMessage
 	 * @return
 	 * @throws JSONException
-	 * @throws ValidationException 
+	 * @throws ValidationException
 	 */
-	public static void ValidateRequestEmailObject(EmailMessage emailMessage) throws JSONException, ValidationException {
+	public static void validateRequestEmailObject(EmailMessage emailMessage) throws JSONException, ValidationException {
 
 		if (CollectionUtils.isEmpty(emailMessage.getToEmail()) || StringUtils.isBlank(emailMessage.getSubject())
 				|| StringUtils.isBlank(emailMessage.getFromUser())) {
 
-			throw new ValidationException(HttpStatus.BAD_REQUEST,"Invalid Request Input");
+			throw new ValidationException(HttpStatus.BAD_REQUEST, "Invalid Request Input");
 		}
 
 	}
@@ -105,10 +108,29 @@ public class GenericUtil {
 		return returnList;
 
 	}
-	
+
 	private boolean validateFileExtension(String extension) {
 		return false;
+
+	}
+
+	public static Date getCurrentDate() {
+		return new Date();
+	}
+
+	public static String commaSeperatedEmailAddress(List<String> emailAddress) {
+		if (emailAddress != null)
+			return emailAddress.stream().collect(Collectors.joining(","));
+		else
+			return null;
+	}
+
+	public static void validateRequestAttachmentFileIds(EmailMessage emailMessage) throws CustomServiceException {
+		
+		if(CollectionUtils.isEmpty(emailMessage.getServerFileIds())) {
+			throw new CustomServiceException("", HttpStatus.BAD_REQUEST);
+		}
 		
 	}
-	
+
 }

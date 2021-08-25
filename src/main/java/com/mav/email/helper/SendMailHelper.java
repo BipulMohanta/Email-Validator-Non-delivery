@@ -1,10 +1,19 @@
 package com.mav.email.helper;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
 import javax.mail.Message;
 import javax.mail.Message.RecipientType;
 import javax.mail.MessagingException;
@@ -22,10 +31,14 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
+import com.mav.email.bo.Attachment;
 import com.mav.email.bo.EmailMessage;
 import com.mav.email.constants.EnvironmentVariableConstants;
 import com.mav.email.constants.MailConstants;
+import com.mav.email.entity.SentMailDetails;
+import com.mav.email.entity.UploadedDocument;
 import com.mav.email.exception.CustomServiceException;
+import com.mav.email.util.GenericUtil;
 import com.sun.mail.smtp.SMTPMessage;
 
 @Component
@@ -71,7 +84,36 @@ public class SendMailHelper {
 				Multipart multipart = new MimeMultipart();
 				for (int i = 0; i < emailMessage.getAttachments().size(); i++) {
 					MimeBodyPart attachmentPart = new MimeBodyPart();
-					attachmentPart.attachFile(new File(emailMessage.getAttachments().get(i).getActualFilePath()));
+					File currentAttachement = new File(emailMessage.getAttachments().get(i).getActualFilePath());
+					byte[] fileByteArray = Files
+							.readAllBytes(Paths.get(emailMessage.getAttachments().get(i).getActualFilePath()));
+					String attachmentName = emailMessage.getAttachments().get(i).getFileName();
+					attachmentPart.setDataHandler(new DataHandler(new DataSource() {
+						
+						@Override
+						public OutputStream getOutputStream() throws IOException {
+							OutputStream outputStream = new ByteArrayOutputStream();							
+							outputStream.write(fileByteArray);
+							return outputStream;
+						}
+						
+						@Override
+						public String getName() {
+							return attachmentName;
+						}
+						
+						@Override
+						public InputStream getInputStream() throws IOException {
+							return new FileInputStream(currentAttachement);
+						}
+						
+						@Override
+						public String getContentType() {
+							return "application/octet-stream";
+						}
+					}));
+					attachmentPart.setFileName(attachmentName);
+					attachmentPart.setDisposition("attachment");
 					multipart.addBodyPart(attachmentPart);
 				}
 				message.setContent(multipart);
@@ -99,11 +141,13 @@ public class SendMailHelper {
 	 */
 	public void addEmailAddressToMessage(SMTPMessage message, RecipientType type, List<String> emailList)
 			throws MessagingException {
-		InternetAddress[] emailAddressesArray = new InternetAddress[emailList.size()];
-		for (int i = 0; i < emailList.size(); i++) {
-			emailAddressesArray[i] = new InternetAddress(emailList.get(i));
+		if (CollectionUtils.isNotEmpty(emailList)) {
+			InternetAddress[] emailAddressesArray = new InternetAddress[emailList.size()];
+			for (int i = 0; i < emailList.size(); i++) {
+				emailAddressesArray[i] = new InternetAddress(emailList.get(i));
+			}
+			message.addRecipients(type, emailAddressesArray);
 		}
-		message.addRecipients(type, emailAddressesArray);
 
 	}
 
@@ -147,6 +191,45 @@ public class SendMailHelper {
 
 		}
 		return props;
+	}
+
+	/**
+	 * 
+	 * @param emailMessage
+	 * @return
+	 */
+	public SentMailDetails createSentMailDetailsObject(EmailMessage emailMessage) {
+		SentMailDetails sentMailDetails = new SentMailDetails();
+		sentMailDetails.setFromEmailAddress(emailMessage.getFromUser());
+
+		sentMailDetails.setToEmailAddress(GenericUtil.commaSeperatedEmailAddress(emailMessage.getToEmail()));
+		sentMailDetails.setCcEmailAddress(GenericUtil.commaSeperatedEmailAddress(emailMessage.getCcEmail()));
+		sentMailDetails.setBccEmailAddress(GenericUtil.commaSeperatedEmailAddress(emailMessage.getBccEmail()));
+
+		sentMailDetails.setCustomMessageId(emailMessage.getCustomMessageHeaderId());
+		sentMailDetails.setEmailSentOn(GenericUtil.getCurrentDate());
+
+		return sentMailDetails;
+	}
+
+	/**
+	 * 
+	 * @param uploadedDocuments
+	 * @return
+	 */
+	public List<Attachment> castUploadedDocumentToAttachement(List<UploadedDocument> uploadedDocuments) {
+		List<Attachment> attachments = new ArrayList<>();
+		uploadedDocuments.stream().forEach(upd -> {
+			Attachment attachment = new Attachment();
+			attachment
+					.setActualFilePath(environment.getProperty(EnvironmentVariableConstants.ATTACHEMENT_STORE_FILE_PATH)
+							+ File.separator + upd.getDocumentId());
+			attachment.setFileExtension(upd.getDocumentExtension());
+			attachment.setFileName(upd.getDocumentName());
+			attachment.setFileSize(upd.getDocumentSize());
+			attachments.add(attachment);
+		});
+		return attachments;
 	}
 
 }

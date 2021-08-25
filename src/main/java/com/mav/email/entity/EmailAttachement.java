@@ -1,6 +1,7 @@
 package com.mav.email.entity;
 
 import java.util.Date;
+import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,10 +17,10 @@ import javax.persistence.Table;
 @Table(name = "EMAIL_ATTACHEMENT")
 public class EmailAttachement {
 
-	@Id()
-	@Column(name = "ATTACHEMENT_ID")
+	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Integer id;
+	@Column(name = "ATTACHEMENT_ID", updatable = false, nullable = false)
+	private UUID id;
 
 	@Column(name = "DOCUMENT_ID")
 	private long documentId;
@@ -35,20 +36,20 @@ public class EmailAttachement {
 
 	@Column(name = "FILE_UPLOAD_DATE")
 	private Date fileUploadedOnDate;
-	
-	@ManyToOne(fetch=FetchType.LAZY)
-	@JoinColumn(name="id")
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "id")
 	private SentMailDetails sentMailDetails;
 
 	public EmailAttachement() {
 
 	}
 
-	public Integer getId() {
+	public UUID getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(UUID id) {
 		this.id = id;
 	}
 

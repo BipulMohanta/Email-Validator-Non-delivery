@@ -29,4 +29,6 @@ public interface SendEmailService {
 	 */
 	public EmailMessage sendMailWithAttachment(EmailMessage emailMessage) throws CustomServiceException;
 
+	void persistEmailInDB(EmailMessage emailMessage) throws CustomServiceException;
+
 }

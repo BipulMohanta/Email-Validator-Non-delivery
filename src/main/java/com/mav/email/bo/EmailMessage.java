@@ -16,12 +16,13 @@ public class EmailMessage {
 	private List<String> ccEmail;
 	private List<String> bccEmail;
 	private String customMessageHeaderId;
-	private List<Attachment> attachments;
+	private List<String> serverFileIds;
 	private String messageId;
 	private boolean isAuthReq;
+	private List<Attachment> attachments;
 
 	public EmailMessage() {
-		
+
 	}
 
 	public EmailMessage(String fromUser, String subject, String bodyMessage, List<String> toEmail, List<String> ccEmail,
@@ -36,7 +37,7 @@ public class EmailMessage {
 	}
 
 	public EmailMessage(String fromUser, String subject, String bodyMessage, List<String> toEmail, List<String> ccEmail,
-			List<String> bccEmail, List<Attachment> attachments) {
+			List<String> bccEmail, List<String> serverFileIds) {
 		super();
 		this.fromUser = fromUser;
 		this.subject = subject;
@@ -44,7 +45,7 @@ public class EmailMessage {
 		this.toEmail = toEmail;
 		this.ccEmail = ccEmail;
 		this.bccEmail = bccEmail;
-		this.attachments = attachments;
+		this.serverFileIds = serverFileIds;
 	}
 
 	public String getFromUser() {
@@ -87,14 +88,6 @@ public class EmailMessage {
 		this.customMessageHeaderId = customMessageHeaderId;
 	}
 
-	public List<Attachment> getAttachments() {
-		return attachments;
-	}
-
-	public void setAttachments(List<Attachment> attachments) {
-		this.attachments = attachments;
-	}
-
 	public List<String> getToEmail() {
 		return toEmail;
 	}
@@ -125,6 +118,22 @@ public class EmailMessage {
 
 	public void setIsAuthReq(boolean isAuthReq) {
 		this.isAuthReq = isAuthReq;
+	}
+
+	public List<String> getServerFileIds() {
+		return serverFileIds;
+	}
+
+	public void setServerFileIds(List<String> serverFileIds) {
+		this.serverFileIds = serverFileIds;
+	}
+
+	public List<Attachment> getAttachments() {
+		return attachments;
+	}
+
+	public void setAttachments(List<Attachment> attachments) {
+		this.attachments = attachments;
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package com.mav.email.entity;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,6 +26,7 @@ public class SentMailDetails {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "SENT_MAIL_ID", updatable = false, nullable = false)
 	private UUID id;
 
 	@Column(name = "FROM_EMAIL_ADDRESS")
@@ -40,7 +42,7 @@ public class SentMailDetails {
 	private String bccEmailAddress;
 
 	@Column(name = "EMAIL_SENT_ON")
-	private String emailSentOn;
+	private Date emailSentOn;
 
 	@Column(name = "EMAIL_MESSAGE_ID")
 	private String emailMessageId;
@@ -48,14 +50,14 @@ public class SentMailDetails {
 	@Column(name = "CUSTOM_MESSAGE_ID")
 	private String customMessageId;
 
-	@OneToMany(fetch = FetchType.LAZY,mappedBy="sentMailDetails",cascade=CascadeType.ALL)
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "sentMailDetails", cascade = CascadeType.ALL)
 	private List<EmailAttachement> emailAttachements;
 
 	public SentMailDetails() {
 	}
 
 	public SentMailDetails(String fromEmailAddress, String toEmailAddress, String ccEmailAddress,
-			String bccEmailAddress, String emailSentOn, String emailMessageId, String customMessageId,
+			String bccEmailAddress, Date emailSentOn, String emailMessageId, String customMessageId,
 			List<EmailAttachement> emailAttachements) {
 		super();
 		this.fromEmailAddress = fromEmailAddress;
@@ -108,11 +110,11 @@ public class SentMailDetails {
 		this.bccEmailAddress = bccEmailAddress;
 	}
 
-	public String getEmailSentOn() {
+	public Date getEmailSentOn() {
 		return emailSentOn;
 	}
 
-	public void setEmailSentOn(String emailSentOn) {
+	public void setEmailSentOn(Date emailSentOn) {
 		this.emailSentOn = emailSentOn;
 	}
 
