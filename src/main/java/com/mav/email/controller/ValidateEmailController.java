@@ -4,17 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,13 +19,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mav.email.dto.ResponseDTO;
 import com.mav.email.dto.factory.ResponseDTOFactory;
-import com.mav.email.service.SendEmailService;
+import com.mav.email.exception.CustomServiceException;
 import com.mav.email.service.ValidateEmailService;
 import com.mav.email.util.GenericUtil;
 import com.mav.email.util.SMTPMXLookup;
 
+/**
+ * 
+ * @author bipul.mohanta
+ *
+ */
 @RestController
-@RequestMapping(path = "api/v1/mail")
+@RequestMapping(path = "mail")
 public class ValidateEmailController {
 
 	@Autowired
@@ -40,7 +41,12 @@ public class ValidateEmailController {
 	@Qualifier(value = "responseDTOFactory")
 	private ResponseDTOFactory responseDTOFactory;
 
-	@PostMapping(path = "validateEmails")
+	/**
+	 * 
+	 * @param requestPayload
+	 * @return
+	 */
+	@PostMapping(path = "validate-emails")
 	public ResponseEntity<ResponseDTO> validateEmailsList(@RequestBody String requestPayload) {
 		JSONObject requestJSON = null;
 		Map<String, Object> requestMap = null;
@@ -57,21 +63,20 @@ public class ValidateEmailController {
 				messageString.add("Empty Json");
 				return responseDTOFactory.reportBadRequestError(messageString, null);
 			}
-		} catch (JSONException e) {
-			e.printStackTrace();
-			List<String> messageString = new ArrayList<>();
-			messageString.add(e.getMessage());
-			return responseDTOFactory.reportBadRequestError(messageString, null);
-		} catch (Exception e) {
-			e.printStackTrace();
-			List<String> messageString = new ArrayList<>();
-			messageString.add(e.getMessage());
-			return responseDTOFactory.reportInternalServerError(messageString, null);
+		} catch (Exception exception) {
+			return null;
+
 		}
 
 	}
 
-	@GetMapping(path = { "getDomainMXRecord" })
+	/**
+	 * 
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@GetMapping(path = { "domain-mx-record" })
 	public ResponseEntity<ResponseDTO> getMXRecordForDomain(HttpServletRequest request, HttpServletResponse response) {
 
 		try {
@@ -82,16 +87,9 @@ public class ValidateEmailController {
 			}
 			List<String> mxList = SMTPMXLookup.getMX(domainName);
 			return responseDTOFactory.reportOkStatus(null, mxList);
-		} catch (NamingException e) {
-			System.out.println(e);
-			List<String> messageString = new ArrayList<>();
-			messageString.add(e.getMessage());
-			return responseDTOFactory.reportBadRequestError(messageString, null);
-		} catch (Exception e) {
-			System.out.println(e);
-			List<String> messageString = new ArrayList<>();
-			messageString.add(e.getMessage());
-			return responseDTOFactory.reportInternalServerError(messageString, null);
+		} catch (Exception exception) {
+			return null;
+
 		}
 
 	}

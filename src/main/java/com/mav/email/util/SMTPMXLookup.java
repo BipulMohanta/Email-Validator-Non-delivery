@@ -69,7 +69,9 @@ import com.mav.email.exception.GenericSMTPException;
  */
 public class SMTPMXLookup {
 
-	private final static Logger logger = LogManager.getLogger();
+	private SMTPMXLookup() {
+		throw new IllegalStateException("Mail Lookup class");
+	}
 
 	/**
 	 * @author bipul.mohanta
@@ -81,15 +83,15 @@ public class SMTPMXLookup {
 		Map<String, String> returnMap = new HashMap<>();
 
 		emailList = emailList.stream().distinct().collect(Collectors.toList());
-		
+
 		Map<String, List<String>> emailToDomainNameMap = new HashMap<String, List<String>>();
 		Map<String, List<String>> validDomainnameMXMap = new HashMap<String, List<String>>();
 		List<String> invalidDomainNameList = new ArrayList<String>();
-		
-		initializeAllMailAsValid(returnMap,emailList);
+
+		initializeAllMailAsValid(returnMap, emailList);
 
 		for (String emailAddress : emailList) {
-			if (MailUtil.syntaxValidateMail(emailAddress)) {
+			if (Boolean.TRUE.equals(MailUtil.syntaxValidateMail(emailAddress))) {
 				String domainName = emailAddress.split("@")[1];
 				if (emailToDomainNameMap.containsKey(domainName)) {
 					emailToDomainNameMap.get(domainName).add(emailAddress);
@@ -111,11 +113,9 @@ public class SMTPMXLookup {
 					} catch (NamingException e) {
 						invalidDomainNameList.add(domainName);
 						returnMap.put(emailAddress, "Invalid Domain Name");
-						logger.error(e.getMessage() + " email address:" + emailAddress);
 					} catch (Exception e) {
 						invalidDomainNameList.add(domainName);
 						returnMap.put(emailAddress, "Invalid Domain Name");
-						logger.error("Exception ocured while getting MX record for email address " + emailAddress);
 					}
 				}
 			} else {
@@ -141,8 +141,8 @@ public class SMTPMXLookup {
 	}
 
 	private static void initializeAllMailAsValid(Map<String, String> returnMap, List<String> emailList) {
-		emailList.stream().forEach(address->returnMap.put(address, "valid"));
-		
+		emailList.stream().forEach(address -> returnMap.put(address, "valid"));
+
 	}
 
 	/**
@@ -179,10 +179,10 @@ public class SMTPMXLookup {
 				emailToDomainNameMap.put(domainName, new ArrayList<String>());
 				emailToDomainNameMap.get(domainName).add(emailAddress);
 				try {
-					List<String> MXresult = getSortedMXRecord(domainName);
-					if (CollectionUtils.isNotEmpty(MXresult)) {
-						validDomainnameMXMap.put(domainName, new ArrayList<String>());
-						validDomainnameMXMap.get(domainName).addAll(MXresult);
+					List<String> mXresult = getSortedMXRecord(domainName);
+					if (CollectionUtils.isNotEmpty(mXresult)) {
+						validDomainnameMXMap.put(domainName, new ArrayList<>());
+						validDomainnameMXMap.get(domainName).addAll(mXresult);
 					} else {
 						invalidDomainNameList.add(domainName);
 						invalidEmailAddress.add(emailAddress);
@@ -190,11 +190,9 @@ public class SMTPMXLookup {
 				} catch (NamingException e) {
 					invalidDomainNameList.add(domainName);
 					invalidEmailAddress.add(emailAddress);
-					logger.error(e.getMessage() + " email address:" + emailAddress);
 				} catch (Exception e) {
 					invalidDomainNameList.add(domainName);
 					invalidEmailAddress.add(emailAddress);
-					logger.error("Exception ocured while getting MX record for email address " + emailAddress);
 				}
 			}
 		}
@@ -269,6 +267,12 @@ public class SMTPMXLookup {
 		return res;
 	}
 
+	/**
+	 * 
+	 * @param domainName
+	 * @return
+	 * @throws NamingException
+	 */
 	public static List<String> getMX(String domainName) throws NamingException {
 
 		Hashtable<String, String> env = new Hashtable<String, String>();
@@ -342,7 +346,7 @@ public class SMTPMXLookup {
 					}
 
 					for (String emailAddress : emailAddresses) {
-						if (returnMap.get(emailAddress) == false) {
+						if (Boolean.FALSE.equals(returnMap.get(emailAddress))) {
 							say(wtr, "RCPT TO: <" + emailAddress + ">");
 							res = hear(rdr);
 							if (res < 500) {
@@ -364,13 +368,10 @@ public class SMTPMXLookup {
 
 				} catch (GenericSMTPException ex) {
 
-					logger.error(MXList.get(mx) + " " + ex.getMessage());
 				} catch (IOException e) {
 
-					logger.error("Unable to connect to MX server " + MXList.get(mx), e);
 				} catch (Exception e) {
 
-					logger.error(" Exception occured while accessing/reading/writing to :" + MXList.get(mx), e);
 				} finally {
 
 					try {
@@ -384,7 +385,7 @@ public class SMTPMXLookup {
 							wtr.close();
 						}
 					} catch (IOException e) {
-						logger.error(e);
+
 					}
 
 				}
@@ -393,6 +394,11 @@ public class SMTPMXLookup {
 		return returnMap;
 	}
 
+	/**
+	 * 
+	 * @param returnMap
+	 * @param emailAddress
+	 */
 	private static void markAllEMailAsInvalid(HashMap<String, Boolean> returnMap, List<String> emailAddress) {
 		for (String email : emailAddress) {
 			returnMap.put(email, false);
@@ -400,7 +406,13 @@ public class SMTPMXLookup {
 
 	}
 
-	private static int hear(BufferedReader in) throws IOException {
+	/**
+	 * 
+	 * @param in
+	 * @return
+	 * @throws IOException
+	 */
+	public static int hear(BufferedReader in) throws IOException {
 		String line = null;
 		int res = 0;
 
@@ -418,9 +430,14 @@ public class SMTPMXLookup {
 		return res;
 	}
 
-	private static void say(BufferedWriter wr, String text) throws IOException {
+	/**
+	 * 
+	 * @param wr
+	 * @param text
+	 * @throws IOException
+	 */
+	public static void say(BufferedWriter wr, String text) throws IOException {
 		wr.write(text + "\r\n");
 		wr.flush();
-		return;
 	}
 }

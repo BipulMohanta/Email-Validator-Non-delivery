@@ -16,11 +16,11 @@ import com.mav.email.service.SendEmailService;
 
 /**
  * 
- * @author APOORVA-BIPUL
+ * @author bipul.mohanta
  *
  */
 @RestController
-@RequestMapping(path = "api/v1/mail")
+@RequestMapping(path = "mail")
 public class SendEmailController {
 
 	@Autowired
@@ -43,11 +43,11 @@ public class SendEmailController {
 			return responseDTOFactory.reportOkStatus(null, emailMessage);
 		} catch (CustomServiceException exception) {
 
-			return null;
+			return responseDTOFactory.reportGenericServerError(null, null, exception.getHttStatus());
 
 		}
 	}
-	
+
 	/**
 	 * @author bipul.mohanta
 	 * @param emailMessage
@@ -60,7 +60,7 @@ public class SendEmailController {
 			return responseDTOFactory.reportOkStatus(null, emailMessage);
 		} catch (CustomServiceException exception) {
 
-			return null;
+			return responseDTOFactory.reportGenericServerError(null, null, exception.getHttStatus());
 
 		}
 	}

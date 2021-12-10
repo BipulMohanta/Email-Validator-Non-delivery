@@ -138,7 +138,11 @@ public class EmailMessage {
 
 	@Override
 	public String toString() {
-		return "";
-
+		return "EmailMessage [fromUser=" + fromUser + ", subject=" + subject + ", bodyMessage=" + bodyMessage
+				+ ", toEmail=" + toEmail + ", ccEmail=" + ccEmail + ", bccEmail=" + bccEmail
+				+ ", customMessageHeaderId=" + customMessageHeaderId + ", serverFileIds=" + serverFileIds
+				+ ", messageId=" + messageId + ", isAuthReq=" + isAuthReq + ", attachments=" + attachments + "]";
 	}
+
+	
 }

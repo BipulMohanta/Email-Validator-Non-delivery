@@ -1,5 +1,9 @@
 package com.mav.email.bo;
-
+/**
+ * 
+ * @author bipul.mohanta
+ *
+ */
 public class Attachment {
 	private String actualFilePath;
 	private long fileSize;
@@ -37,4 +41,12 @@ public class Attachment {
 	public void setFileExtension(String fileExtension) {
 		this.fileExtension = fileExtension;
 	}
+
+	@Override
+	public String toString() {
+		return "Attachment [actualFilePath=" + actualFilePath + ", fileSize=" + fileSize + ", fileName=" + fileName
+				+ ", fileExtension=" + fileExtension + "]";
+	}
+	
+	
 }
